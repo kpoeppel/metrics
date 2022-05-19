@@ -99,13 +99,13 @@ class AssistantCLI:
     ) -> Union[str, List[str]]:
         """Determine what domains were changed in particular PR."""
         if not pr:
-            return "tests"
+            return "test"
         url = f"https://api.github.com/repos/PyTorchLightning/metrics/pulls/{pr}/files"
         logging.debug(url)
         data = request_url(url, auth_token)
         if not data:
             logging.debug("WARNING: No data was received -> test everything.")
-            return "tests"
+            return "test"
         files = [d["filename"] for d in data]
 
         # filter only docs files
@@ -115,13 +115,13 @@ class AssistantCLI:
             return ""
 
         # filter only package files and skip inits
-        _filter_pkg = lambda fn: (fn.startswith("torchmetrics") and "__init__.py" not in fn) or fn.startswith("tests")
+        _filter_pkg = lambda fn: (fn.startswith("torchmetrics") and "__init__.py" not in fn) or fn.startswith("test")
         files_pkg = [fn for fn in files if _filter_pkg(fn)]
         if not files_pkg:
-            return "tests"
+            return "test"
 
         # parse domains
-        _crop_path = lambda fn: fn.replace("torchmetrics/", "").replace("tests/", "").replace("functional/", "")
+        _crop_path = lambda fn: fn.replace("torchmetrics/", "").replace("test/", "").replace("functional/", "")
         files_pkg = [_crop_path(fn) for fn in files_pkg]
         # filter domain names
         tm_modules = [fn.split("/")[0] for fn in files_pkg if "/" in fn]
@@ -129,12 +129,12 @@ class AssistantCLI:
         tm_modules = [md for md in tm_modules if md not in general_sub_pkgs]
         if len(files_pkg) > len(tm_modules):
             logging.debug("Some more files was changed -> rather test everything...")
-            return "tests"
+            return "test"
         # keep only unique
         tm_modules = set(tm_modules)
         if as_list:
             return list(tm_modules)
-        return " ".join([f"tests/{md}" for md in tm_modules])
+        return " ".join([f"test/{md}" for md in tm_modules])
 
 
 if __name__ == "__main__":
